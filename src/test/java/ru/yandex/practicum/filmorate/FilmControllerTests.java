@@ -29,10 +29,10 @@ public class FilmControllerTests {
 
     @Test
     public void addFilmTest() {
-        filmController.createFilm(film);
+        filmController.create(film);
 
-        assertEquals(1, filmController.listOfFilms().size());
-        assertEquals(filmController.listOfFilms().get(0), film);
+        assertEquals(1, filmController.getAll().size());
+        assertEquals(filmController.getAll().get(0), film);
     }
 
     @Test
@@ -45,43 +45,43 @@ public class FilmControllerTests {
         film2.setDuration(120);
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film2);
+            filmController.create(film2);
         });
         assertEquals("title of the movie cannot be empty", thrown.getMessage());
     }
 
     @Test
     public void addFilmWithDescrMore200Chars() {
-        filmController.createFilm(film);
+        filmController.create(film);
         film.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt " +
                 "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco " +
                 "laboris nisi ut aliquip ex ea commodo consequat");
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.updateFilm(film);
+            filmController.update(film);
         });
         assertEquals("maximum length of the description is 200 characters", thrown.getMessage());
     }
 
     @Test
     public void addFilmWithInvalidReleaseDate() {
-        filmController.createFilm(film);
+        filmController.create(film);
         LocalDate invalidReleaseDate = LocalDate.of(1895, 12, 27);
         film.setReleaseDate(invalidReleaseDate);
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.updateFilm(film);
+            filmController.update(film);
         });
         assertEquals("release date should not be earlier than December 28, 1895", thrown.getMessage());
     }
 
     @Test
     public void addFilmWithNegativeDuration() {
-        filmController.createFilm(film);
+        filmController.create(film);
         film.setDuration(-120);
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.updateFilm(film);
+            filmController.update(film);
         });
         assertEquals("duration of the film should be positive", thrown.getMessage());
     }
@@ -95,7 +95,7 @@ public class FilmControllerTests {
         film3.setDuration(120);
 
         Throwable thrown = assertThrows(NullPointerException.class, () -> {
-            filmController.createFilm(film3);
+            filmController.create(film3);
         });
         assertEquals(null, thrown.getMessage());
     }

@@ -15,14 +15,15 @@ import java.util.Map;
 
 @RestController
 @Slf4j
-public class FilmController {
+public class FilmController extends FilmorateController<Film>{
 
     private Map<Long, Film> films = new HashMap<>();
     private Long id = 1L;
     private static final LocalDate RELEASE_DATE_VALID = LocalDate.of(1895, 12, 28);
 
+    @Override
     @PostMapping(value = "/films")
-    public Film createFilm(@Valid @RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         validation(film);
         Long id = generateId();
         film.setId(id);
@@ -32,9 +33,10 @@ public class FilmController {
         return film;
     }
 
+    @Override
     @SneakyThrows
     @PutMapping(value = "/films")
-    public Film updateFilm(@Valid @RequestBody Film film) {
+    public Film update(@Valid @RequestBody Film film) {
         if (film.getId()< 0) {
             throw new ValidationException("invalid id");
         }
@@ -45,8 +47,9 @@ public class FilmController {
         return film;
     }
 
+    @Override
     @GetMapping(value = "/films")
-    public List<Film> listOfFilms() {
+    public List<Film> getAll() {
 
         return new ArrayList<>(films.values());
     }

@@ -29,19 +29,19 @@ public class UserControllerTests {
 
     @Test
     public void addUserTest() {
-        userController.createUser(user);
+        userController.create(user);
 
-        assertEquals(1, userController.listOfUsers().size());
-        assertEquals(userController.listOfUsers().get(0), user);
+        assertEquals(1, userController.getAll().size());
+        assertEquals(userController.getAll().get(0), user);
     }
 
     @Test
     public void addUserWithIncorrectEmail() {
-        userController.createUser(user);
+        userController.create(user);
         user.setEmail("emailtest.ru");
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.updateUser(user);
+            userController.update(user);
         });
         assertEquals("email must contain the symbol @", thrown.getMessage());
 
@@ -56,7 +56,7 @@ public class UserControllerTests {
         user2.setBirthday(birthday);
 
         Throwable thrown = assertThrows(NullPointerException.class, () -> {
-            userController.updateUser(user2);
+            userController.update(user2);
         });
         assertEquals(null, thrown.getMessage());
 
@@ -72,39 +72,39 @@ public class UserControllerTests {
         user2.setBirthday(birthday);
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.createUser(user2);
+            userController.create(user2);
         });
         assertEquals("email cannot be empty", thrown.getMessage());
     }
 
     @Test
     public void addUserWithIncorrectLogin() {
-        userController.createUser(user);
+        userController.create(user);
         user.setLogin("test Login");
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.updateUser(user);
+            userController.update(user);
         });
         assertEquals("login cannot contain spaces", thrown.getMessage());
     }
 
     @Test
     public void addUserWithIncorrectBirthday() {
-        userController.createUser(user);
+        userController.create(user);
         LocalDate birthday = LocalDate.of(2990, 01, 01);
         user.setBirthday(birthday);
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.updateUser(user);
+            userController.update(user);
         });
         assertEquals("date of birth cannot be in the future", thrown.getMessage());
     }
 
     @Test
     public void updateUserTest() {
-        userController.createUser(user);
+        userController.create(user);
         user.setName("newTestName");
-        userController.updateUser(user);
+        userController.update(user);
 
         assertEquals("newTestName", user.getName());
     }

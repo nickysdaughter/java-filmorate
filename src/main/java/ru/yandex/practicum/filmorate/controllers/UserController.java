@@ -12,25 +12,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @Slf4j
-public class UserController {
+public class UserController extends FilmorateController<User> {
 
     private Map<Long, User> users = new HashMap<>();
     private Long id = 1L;
     private static LocalDate currentDate = LocalDate.now();
 
+    @Override
     @GetMapping(value = "/users")
-    public List<User> listOfUsers() {
+    public List<User> getAll() {
 
         return new ArrayList<>(users.values());
     }
 
+    @Override
     @PostMapping(value = "/users")
-    public User createUser(@Valid @RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         validation(user);
         Long id = generateId();
         user.setId(id);
@@ -41,9 +41,10 @@ public class UserController {
     }
 
 
+    @Override
     @SneakyThrows
     @PutMapping(value = "/users")
-    public User updateUser(@Valid @RequestBody User user) {
+    public User update(@Valid @RequestBody User user) {
         if (user.getId() < 0) {
             throw new ValidationException("invalid id");
         }
@@ -59,7 +60,7 @@ public class UserController {
     }
 
     @SneakyThrows
-    private static void validation(User user) {
+    protected static void validation(User user) {
 
         String email = user.getEmail();
 //        final Pattern VALID_EMAIL_ADDRESS_REGEX =
