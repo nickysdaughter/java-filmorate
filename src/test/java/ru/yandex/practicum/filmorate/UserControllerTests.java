@@ -35,17 +35,6 @@ public class UserControllerTests {
         assertEquals(userController.getAll().get(0), user);
     }
 
-    @Test
-    public void addUserWithIncorrectEmail() {
-        userController.create(user);
-        user.setEmail("emailtest.ru");
-
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.update(user);
-        });
-        assertEquals("email must contain the symbol @", thrown.getMessage());
-
-    }
 
     @Test
     public void addUserWithoutEmail() {
@@ -60,21 +49,6 @@ public class UserControllerTests {
         });
         assertEquals(null, thrown.getMessage());
 
-    }
-
-    @Test
-    public void addUserWithEmptyEmail() {
-        User user2 = new User();
-        LocalDate birthday = LocalDate.of(1990, 01, 01);
-        user2.setEmail("");
-        user2.setLogin("testLogin");
-        user2.setName("testName");
-        user2.setBirthday(birthday);
-
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.create(user2);
-        });
-        assertEquals("email cannot be empty", thrown.getMessage());
     }
 
     @Test
