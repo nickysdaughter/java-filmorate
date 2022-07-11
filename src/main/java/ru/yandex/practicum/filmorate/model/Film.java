@@ -18,5 +18,4 @@ public class Film {
     private LocalDate releaseDate;
     @NonNull
     private int duration;
-
 }

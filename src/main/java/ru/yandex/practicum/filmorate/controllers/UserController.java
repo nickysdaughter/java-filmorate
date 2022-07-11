@@ -63,24 +63,7 @@ public class UserController extends FilmorateController<User> {
     protected static void validation(User user) {
 
         String email = user.getEmail();
-//        final Pattern VALID_EMAIL_ADDRESS_REGEX =
-//                Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-//        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
         try {
-
-
-            if (email.equals("")) {
-                log.debug("email is empty");
-                throw new ValidationException("email cannot be empty");
-            }
-//        if (matcher.find()) {
-//            log.debug("email is invalid: {}", user.getEmail());
-//            throw new ValidationException("email must contain the symbol @");
-//        }
-            if (!email.contains("@")) {
-                log.debug("email is invalid: {}", user.getEmail());
-                throw new ValidationException("email must contain the symbol @");
-            }
             if (user.getLogin().contains(" ")) {
                 log.debug("login is contain spaces: {}", user.getLogin());
                 throw new ValidationException("login cannot contain spaces");

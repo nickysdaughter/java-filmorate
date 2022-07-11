@@ -3,6 +3,9 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.*;
 
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @AllArgsConstructor
@@ -11,9 +14,12 @@ import java.time.LocalDate;
 @Setter
 public class User {
     private Long id;
-    @NonNull
+    @Email(message = "invalid email")
+    @NotNull(message = "empty email")
+    @NotBlank(message = "empty email")
     private String email;
-    @NonNull
+    @NotBlank(message = "empty login")
+    @NotNull(message = "empty")
     private String login;
     private String name;
     @NonNull
