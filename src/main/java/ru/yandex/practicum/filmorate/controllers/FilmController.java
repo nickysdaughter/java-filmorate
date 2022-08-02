@@ -2,84 +2,67 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
+import javax.validation.constraints.Positive;
 import java.util.List;
-import java.util.Map;
 
 @RestController
+@RequestMapping("/films")
 @Slf4j
-public class FilmController extends FilmorateController<Film>{
+public class FilmController {
 
-    private Map<Long, Film> films = new HashMap<>();
-    private Long id = 1L;
-    private static final LocalDate RELEASE_DATE_VALID = LocalDate.of(1895, 12, 28);
+    private final FilmService filmService;
 
-    @Override
-    @PostMapping(value = "/films")
+    @Autowired
+    public FilmController(FilmService filmService) {
+
+        this.filmService = filmService;
+    }
+
+    @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        validation(film);
-        Long id = generateId();
-        film.setId(id);
-        films.put(id, film);
-        log.info("movie is added: {}", film);
 
-        return film;
+        return filmService.create(film);
     }
 
-    @Override
-    @SneakyThrows
-    @PutMapping(value = "/films")
+    @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        if (film.getId()< 0) {
-            throw new ValidationException("invalid id");
-        }
-        validation(film);
-        films.put(film.getId(), film);
-        log.info("movie is updated: {}", film);
 
-        return film;
+        return filmService.update(film);
     }
 
-    @Override
-    @GetMapping(value = "/films")
+    @GetMapping
     public List<Film> getAll() {
 
-        return new ArrayList<>(films.values());
+        return filmService.getAll();
     }
 
-    private Long generateId() {
-        return id++;
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable Long id) {
+
+        return filmService.getFilm(id);
     }
 
-    @SneakyThrows
-    private static void validation(Film film) {
-        try {
-            if (film.getName().equals("")) {
-                log.debug("movie title is empty");
-                throw new ValidationException("title of the movie cannot be empty");
-            }
-            if (film.getDescription().length() > 200) {
-                log.debug("length of the description is more than 200 characters");
-                throw new ValidationException("maximum length of the description is 200 characters");
-            }
-            if (film.getReleaseDate().isBefore(RELEASE_DATE_VALID)) {
-                log.debug("release date should is earlier than December 28, 1895: {}", film.getReleaseDate());
-                throw new ValidationException("release date should not be earlier than December 28, 1895");
-            }
-            if (film.getDuration() < 0) {
-                log.debug("duration of the film is negative: {}", film.getDuration());
-                throw new ValidationException("duration of the film should be positive");
-            }
-        } catch (ValidationException e) {
-            log.debug(e.getMessage());
-            throw new ValidationException(e.getMessage());
-        }
+    @PutMapping("/{id}/like/{userId}")
+    public void addLikeFilm(@PathVariable Long id, @PathVariable Long userId) {
+
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void removeLikeFilm(@PathVariable Long id, @PathVariable Long userId) {
+
+        filmService.removeLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> mostPopularMovies(@Positive @RequestParam(defaultValue = "10") int count) {
+
+        return filmService.mostPopularMovies(count);
     }
 }

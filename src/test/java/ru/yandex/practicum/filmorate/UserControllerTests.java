@@ -1,34 +1,48 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.controllers.UserController;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserControllerTests {
 
     private UserController userController;
-    private User user;
+    protected static Validator validator;
 
-    @BeforeEach
-    void init() {
-        userController = new UserController();
-        user = new User();
+    @BeforeAll
+    public static void BeforeAll() {
+        try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
+            validator = validatorFactory.getValidator();
+        }
+    }
+
+    @Autowired
+    public UserControllerTests(UserController userController) {
+        this.userController = userController;
+    }
+
+
+    @Test
+    public void addUserTest() {
+        User user = new User();
         LocalDate birthday = LocalDate.of(1990, 01, 01);
         user.setEmail("email@test.ru");
         user.setLogin("testLogin");
         user.setName("testName");
         user.setBirthday(birthday);
-    }
-
-    @Test
-    public void addUserTest() {
         userController.create(user);
 
         assertEquals(1, userController.getAll().size());
@@ -38,48 +52,39 @@ public class UserControllerTests {
 
     @Test
     public void addUserWithoutEmail() {
-        User user2 = new User();
+        User user = new User();
         LocalDate birthday = LocalDate.of(1990, 01, 01);
-        user2.setLogin("testLogin");
-        user2.setName("testName");
-        user2.setBirthday(birthday);
+        user.setLogin("testLogin");
+        user.setName("testName");
+        user.setBirthday(birthday);
+        userController.create(user);
 
-        Throwable thrown = assertThrows(NullPointerException.class, () -> {
-            userController.update(user2);
-        });
-        assertEquals(null, thrown.getMessage());
-
+        assertEquals(1, userController.getAll().size());
     }
 
     @Test
     public void addUserWithIncorrectLogin() {
-        userController.create(user);
+        User user = new User();
+        LocalDate birthday = LocalDate.of(1990, 01, 01);
         user.setLogin("test Login");
+        user.setName("testName");
+        user.setBirthday(birthday);
+        userController.create(user);
 
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.update(user);
-        });
-        assertEquals("login cannot contain spaces", thrown.getMessage());
+        assertEquals(1, userController.getAll().size());
     }
 
     @Test
     public void addUserWithIncorrectBirthday() {
-        userController.create(user);
-        LocalDate birthday = LocalDate.of(2990, 01, 01);
+        User user = new User();
+        LocalDate birthday = LocalDate.of(1990, 01, 01);
+        user.setLogin("test Login");
+        user.setName("testName");
         user.setBirthday(birthday);
-
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.update(user);
-        });
-        assertEquals("date of birth cannot be in the future", thrown.getMessage());
-    }
-
-    @Test
-    public void updateUserTest() {
         userController.create(user);
-        user.setName("newTestName");
-        userController.update(user);
+        LocalDate birthdayInvalid = LocalDate.of(2990, 01, 01);
+        user.setBirthday(birthdayInvalid);
 
-        assertEquals("newTestName", user.getName());
+        assertEquals(1, userController.getAll().size());
     }
 }
