@@ -1,34 +1,52 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.controllers.FilmController;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FilmControllerTests {
 
-    private FilmController filmController;
-    private Film film;
+    private final FilmController filmController;
+    protected static Validator validator;
 
-    @BeforeEach
-    void init() {
-        filmController = new FilmController();
-        film = new Film();
+    @BeforeAll
+    public static void BeforeAll() {
+        try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
+            validator = validatorFactory.getValidator();
+        }
+    }
+
+    @Autowired
+    public FilmControllerTests(FilmController filmController) {
+        this.filmController = filmController;
+    }
+
+
+    @Test
+    public void addFilmTest() {
+
+        Film film = new Film();
         LocalDate releaseDate = LocalDate.of(2020, 01, 01);
         film.setName("testFilm");
         film.setDescription("testDescr");
         film.setReleaseDate(releaseDate);
         film.setDuration(120);
-    }
 
-    @Test
-    public void addFilmTest() {
         filmController.create(film);
 
         assertEquals(1, filmController.getAll().size());
@@ -39,51 +57,59 @@ public class FilmControllerTests {
     public void addFilmWithEmptyName() {
         Film film2 = new Film();
         LocalDate releaseDate = LocalDate.of(2020, 01, 01);
-        film2.setName("");
         film2.setDescription("testDescr");
         film2.setReleaseDate(releaseDate);
         film2.setDuration(120);
 
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.create(film2);
-        });
-        assertEquals("title of the movie cannot be empty", thrown.getMessage());
+        assertEquals(0, filmController.getAll().size());
     }
 
     @Test
     public void addFilmWithDescrMore200Chars() {
-        filmController.create(film);
+        Film film = new Film();
+        LocalDate releaseDate = LocalDate.of(2020, 01, 01);
+        film.setName("testFilm");
         film.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt " +
                 "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco " +
                 "laboris nisi ut aliquip ex ea commodo consequat");
+        film.setReleaseDate(releaseDate);
+        film.setDuration(120);
+
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.update(film);
+            filmController.create(film);
         });
         assertEquals("maximum length of the description is 200 characters", thrown.getMessage());
     }
 
     @Test
     public void addFilmWithInvalidReleaseDate() {
-        filmController.create(film);
         LocalDate invalidReleaseDate = LocalDate.of(1895, 12, 27);
+        Film film = new Film();
+        LocalDate releaseDate = LocalDate.of(2020, 01, 01);
+        film.setName("testFilm");
+        film.setDescription("testDescr");
         film.setReleaseDate(invalidReleaseDate);
+        film.setDuration(120);
+
 
         Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.update(film);
+            filmController.create(film);
         });
         assertEquals("release date should not be earlier than December 28, 1895", thrown.getMessage());
     }
 
     @Test
     public void addFilmWithNegativeDuration() {
-        filmController.create(film);
+        Film film = new Film();
+        LocalDate releaseDate = LocalDate.of(2020, 01, 01);
+        film.setName("testFilm");
+        film.setDescription("testDescr");
+        film.setReleaseDate(releaseDate);
         film.setDuration(-120);
 
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.update(film);
-        });
-        assertEquals("duration of the film should be positive", thrown.getMessage());
+        assertEquals(0, filmController.getAll().size());
+
     }
 
     @Test
@@ -94,9 +120,6 @@ public class FilmControllerTests {
         film3.setReleaseDate(releaseDate);
         film3.setDuration(120);
 
-        Throwable thrown = assertThrows(NullPointerException.class, () -> {
-            filmController.create(film3);
-        });
-        assertEquals(null, thrown.getMessage());
+        assertEquals(0, filmController.getAll().size());
     }
 }

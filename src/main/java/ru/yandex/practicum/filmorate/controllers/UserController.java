@@ -2,9 +2,11 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -14,75 +16,57 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/users")
 @Slf4j
-public class UserController extends FilmorateController<User> {
+public class UserController {
+    private final UserService userService;
 
-    private Map<Long, User> users = new HashMap<>();
-    private Long id = 1L;
-    private static LocalDate currentDate = LocalDate.now();
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
-    @Override
-    @GetMapping(value = "/users")
+
+    @GetMapping
     public List<User> getAll() {
 
-        return new ArrayList<>(users.values());
+        return userService.getAll();
     }
 
-    @Override
-    @PostMapping(value = "/users")
+    @PostMapping
     public User create(@Valid @RequestBody User user) {
-        validation(user);
-        Long id = generateId();
-        user.setId(id);
-        users.put(id, user);
-        log.info("User is added: {}", user.getLogin());
 
-        return user;
+        return userService.create(user);
     }
 
-
-    @Override
-    @SneakyThrows
-    @PutMapping(value = "/users")
+    @PutMapping
     public User update(@Valid @RequestBody User user) {
-        if (user.getId() < 0) {
-            throw new ValidationException("invalid id");
-        }
-        validation(user);
-        users.put(user.getId(), user);
-        log.info("User is updated: {}", user.getLogin());
 
-        return user;
+        return userService.update(user);
     }
 
-    private Long generateId() {
-        return id++;
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable Long id) {
+        return userService.getUser(id);
     }
 
-    @SneakyThrows
-    protected static void validation(User user) {
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.addFriend(id, friendId);
+    }
 
-        String email = user.getEmail();
-        try {
-            if (user.getLogin().contains(" ")) {
-                log.debug("login is contain spaces: {}", user.getLogin());
-                throw new ValidationException("login cannot contain spaces");
-            }
-            if (user.getName() == null || user.getName().equals("")) {
-                log.info("name can be empty — in this case, the login will be used");
-                user.setName(user.getLogin());
-            }
-            if (user.getBirthday().isAfter(currentDate)) {
-                log.info("date of birth is in the future: {}", user.getBirthday());
-                throw new ValidationException("date of birth cannot be in the future");
-            }
-            if (user.getLogin() == null) {
-                log.info("user must have a login");
-                throw new ValidationException("empty login");
-            }
-        } catch (ValidationException e) {
-            log.debug(e.getMessage());
-            throw new ValidationException(e.getMessage());
-        }
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getUserFriend(@PathVariable Long id) {
+        return userService.getAllFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 }
