@@ -26,6 +26,8 @@ public class Film {
     @NonNull
     @Positive(message = "duration can't be negative")
     private int duration;
+    private Set<Genre> genres;
+    private Mpa mpa;
 
     public void addLike(Long userId) {
 
