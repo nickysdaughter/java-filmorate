@@ -3,4 +3,4 @@
 ER-диаграмма:
 
 
-![](C:\Users\marya\Downloads\filmorate.png)
+![](C:\Users\marya\IdeaProjects\java-filmorate\filmorate.png)
